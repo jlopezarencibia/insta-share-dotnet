@@ -14,4 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\InstaShare.Core\InstaShare.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Abp.AutoMapper" Version="8.0.0" />
+  </ItemGroup>
 </Project>
