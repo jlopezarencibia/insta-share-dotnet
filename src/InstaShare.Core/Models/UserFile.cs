@@ -6,9 +6,9 @@ namespace InstaShare.Models;
 
 public class UserFile: Entity<int>
 {
-    public byte[] FileBytes;
-    public long FileSize;
-    public string FileName;
-    public FileStatus FileStatus;
-    public int UserId;
+    public byte[] FileBytes { get; set; }
+    public long FileSize { get; set; }
+    public string FileName { get; set; }
+    public FileStatus FileStatus { get; set; }
+    public int UserId { get; set; }
 }
