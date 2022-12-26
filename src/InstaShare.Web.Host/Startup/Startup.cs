@@ -20,6 +20,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using System.IO;
+using Abp.Timing;
 
 namespace InstaShare.Web.Host.Startup
 {
@@ -36,6 +37,12 @@ namespace InstaShare.Web.Host.Startup
         {
             _hostingEnvironment = env;
             _appConfiguration = env.GetAppConfiguration();
+            
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            Clock.Provider = ClockProviders.Utc;
+            _hostingEnvironment = env;
+            _appConfiguration = env.GetAppConfiguration();
+            // var versionHelper = new AppVersionHelper();
         }
 
         public void ConfigureServices(IServiceCollection services)

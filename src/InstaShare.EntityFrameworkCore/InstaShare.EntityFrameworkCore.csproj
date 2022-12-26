@@ -27,4 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\InstaShare.Core\InstaShare.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Migrations" />
+  </ItemGroup>
 </Project>
