@@ -42,7 +42,6 @@ namespace InstaShare.Web.Host.Startup
             Clock.Provider = ClockProviders.Utc;
             _hostingEnvironment = env;
             _appConfiguration = env.GetAppConfiguration();
-            // var versionHelper = new AppVersionHelper();
         }
 
         public void ConfigureServices(IServiceCollection services)
