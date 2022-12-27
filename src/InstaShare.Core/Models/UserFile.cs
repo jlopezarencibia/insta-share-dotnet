@@ -1,5 +1,4 @@
 using Abp.Domain.Entities;
-using InstaShare.Authorization.Users;
 using InstaShare.Shared;
 
 namespace InstaShare.Models;
