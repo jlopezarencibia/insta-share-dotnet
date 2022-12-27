@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.Authorization;
@@ -81,6 +82,11 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
         });
 
         return ObjectMapper.Map<BasicUaserFileDto>(newUserFile);
+    }
+
+    public Task DownloadFileAsync(int fileId)
+    {
+        return null;
     }
 
     private byte[] ReadToEnd(Stream stream)
