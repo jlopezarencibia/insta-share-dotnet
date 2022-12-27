@@ -1,7 +1,9 @@
 using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.Application.Services.Dto;
+using Abp.Authorization.Users;
 using InstaShare.Roles.Dto;
+using InstaShare.Sessions.Dto;
 using InstaShare.Users.Dto;
 
 namespace InstaShare.Users
@@ -14,5 +16,6 @@ namespace InstaShare.Users
         Task ChangeLanguage(ChangeUserLanguageDto input);
 
         Task<bool> ChangePassword(ChangePasswordDto input);
+        Task<UserLoginInfoDto> UpdateProfileAsync(UserLoginInfoDto userInfo);
     }
 }

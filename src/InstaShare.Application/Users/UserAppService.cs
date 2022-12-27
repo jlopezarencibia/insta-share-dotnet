@@ -19,6 +19,7 @@ using InstaShare.Authorization.Accounts;
 using InstaShare.Authorization.Roles;
 using InstaShare.Authorization.Users;
 using InstaShare.Roles.Dto;
+using InstaShare.Sessions.Dto;
 using InstaShare.Users.Dto;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,8 @@ using Microsoft.EntityFrameworkCore;
 namespace InstaShare.Users
 {
     [AbpAuthorize(PermissionNames.Pages_Users)]
-    public class UserAppService : AsyncCrudAppService<User, UserDto, long, PagedUserResultRequestDto, CreateUserDto, UserDto>, IUserAppService
+    public class UserAppService :
+        AsyncCrudAppService<User, UserDto, long, PagedUserResultRequestDto, CreateUserDto, UserDto>, IUserAppService
     {
         private readonly UserManager _userManager;
         private readonly RoleManager _roleManager;
@@ -103,19 +105,13 @@ namespace InstaShare.Users
         [AbpAuthorize(PermissionNames.Pages_Users_Activation)]
         public async Task Activate(EntityDto<long> user)
         {
-            await Repository.UpdateAsync(user.Id, async (entity) =>
-            {
-                entity.IsActive = true;
-            });
+            await Repository.UpdateAsync(user.Id, async (entity) => { entity.IsActive = true; });
         }
 
         [AbpAuthorize(PermissionNames.Pages_Users_Activation)]
         public async Task DeActivate(EntityDto<long> user)
         {
-            await Repository.UpdateAsync(user.Id, async (entity) =>
-            {
-                entity.IsActive = false;
-            });
+            await Repository.UpdateAsync(user.Id, async (entity) => { entity.IsActive = false; });
         }
 
         public async Task<ListResultDto<RoleDto>> GetRoles()
@@ -161,7 +157,9 @@ namespace InstaShare.Users
         protected override IQueryable<User> CreateFilteredQuery(PagedUserResultRequestDto input)
         {
             return Repository.GetAllIncluding(x => x.Roles)
-                .WhereIf(!input.Keyword.IsNullOrWhiteSpace(), x => x.UserName.Contains(input.Keyword) || x.Name.Contains(input.Keyword) || x.EmailAddress.Contains(input.Keyword))
+                .WhereIf(!input.Keyword.IsNullOrWhiteSpace(),
+                    x => x.UserName.Contains(input.Keyword) || x.Name.Contains(input.Keyword) ||
+                         x.EmailAddress.Contains(input.Keyword))
                 .WhereIf(input.IsActive.HasValue, x => x.IsActive == input.IsActive);
         }
 
@@ -187,6 +185,7 @@ namespace InstaShare.Users
             identityResult.CheckErrors(LocalizationManager);
         }
 
+        [AbpAllowAnonymous]
         public async Task<bool> ChangePassword(ChangePasswordDto input)
         {
             await _userManager.InitializeOptionsAsync(AbpSession.TenantId);
@@ -196,7 +195,7 @@ namespace InstaShare.Users
             {
                 throw new Exception("There is no current user!");
             }
-            
+
             if (await _userManager.CheckPasswordAsync(user, input.CurrentPassword))
             {
                 CheckErrors(await _userManager.ChangePasswordAsync(user, input.NewPassword));
@@ -218,19 +217,21 @@ namespace InstaShare.Users
             {
                 throw new UserFriendlyException("Please log in before attempting to reset password.");
             }
-            
+
             var currentUser = await _userManager.GetUserByIdAsync(_abpSession.GetUserId());
-            var loginAsync = await _logInManager.LoginAsync(currentUser.UserName, input.AdminPassword, shouldLockout: false);
+            var loginAsync =
+                await _logInManager.LoginAsync(currentUser.UserName, input.AdminPassword, shouldLockout: false);
             if (loginAsync.Result != AbpLoginResultType.Success)
             {
-                throw new UserFriendlyException("Your 'Admin Password' did not match the one on record.  Please try again.");
+                throw new UserFriendlyException(
+                    "Your 'Admin Password' did not match the one on record.  Please try again.");
             }
-            
+
             if (currentUser.IsDeleted || !currentUser.IsActive)
             {
                 return false;
             }
-            
+
             var roles = await _userManager.GetRolesAsync(currentUser);
             if (!roles.Contains(StaticRoleNames.Tenants.Admin))
             {
@@ -246,6 +247,23 @@ namespace InstaShare.Users
 
             return true;
         }
+
+        [AbpAllowAnonymous]
+        public async Task<UserLoginInfoDto> UpdateProfileAsync(UserLoginInfoDto userInfo)
+        {
+            var currentUser = await _userManager.GetUserByIdAsync(_abpSession.GetUserId());
+            currentUser.Name = userInfo.Name;
+            currentUser.Surname = userInfo.Surname;
+            currentUser.EmailAddress = userInfo.EmailAddress;
+            var userChanged = await _userManager.UpdateAsync(currentUser);
+            return new UserLoginInfoDto()
+            {
+                Id = currentUser.Id,
+                Name = currentUser.Name,
+                Surname = currentUser.Surname,
+                EmailAddress = currentUser.EmailAddress,
+                UserName = currentUser.UserName
+            };
+        }
     }
 }
-
