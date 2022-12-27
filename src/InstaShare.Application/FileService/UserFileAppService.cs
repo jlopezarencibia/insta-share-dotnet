@@ -51,6 +51,7 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
                 UserId = file.UserId
             });
         }
+
         return result;
     }
 
@@ -81,12 +82,35 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
             UserId = userId
         });
 
-        return ObjectMapper.Map<BasicUaserFileDto>(newUserFile);
+        var result = new BasicUaserFileDto()
+        {
+            Id = newUserFile.Id,
+            FileName = newUserFile.FileName,
+            FileSize = newUserFile.FileSize,
+            FileStatus = newUserFile.FileStatus,
+            UserId = newUserFile.UserId
+        };
+
+        return result;
     }
 
     public Task DownloadFileAsync(int fileId)
     {
         return null;
+    }
+
+    public async Task<BasicUaserFileDto> RenameAsync(int fileId, string newName)
+    {
+        var file = await Repository.GetAsync(fileId);
+        file.FileName = newName;
+        var newFile = await UpdateAsync(ObjectMapper.Map<UserFileDto>(file));
+        return new BasicUaserFileDto()
+        {
+            Id = newFile.Id,
+            FileName = newFile.FileName,
+            FileSize = newFile.FileSize,
+            FileStatus = newFile.FileStatus,
+        };
     }
 
     private byte[] ReadToEnd(Stream stream)
