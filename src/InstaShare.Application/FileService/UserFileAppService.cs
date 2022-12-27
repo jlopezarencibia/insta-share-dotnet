@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.Authorization;
 using Abp.Domain.Repositories;
+using Abp.Domain.Uow;
 using Abp.Extensions;
 using InstaShare.Authorization;
 using InstaShare.Dtos.UserFile;
@@ -20,7 +21,7 @@ namespace InstaShare.FileService;
 public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IUserFileAppService
 {
     /// <summary>
-    /// 
+    /// Default repository constructor
     /// </summary>
     /// <param name="repository"></param>
     public UserFileAppService(IRepository<UserFile, int> repository) : base(repository)
@@ -28,32 +29,48 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
     }
 
     /// <summary>
-    /// 
+    /// Get all the files for a giver user
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
+    [AbpAuthorize]
+    [UnitOfWork]
     public async Task<List<BasicUaserFileDto>> GetAllFilesByUserIdAsync(int userId)
     {
         var userFiles = await Repository.GetAllListAsync(f => f.UserId == userId);
-        return ObjectMapper.Map<List<BasicUaserFileDto>>(userFiles);
+        var result = new List<BasicUaserFileDto>();
+        foreach (var file in userFiles)
+        {
+            result.Add(new BasicUaserFileDto()
+            {
+                Id = file.Id,
+                FileName = file.FileName,
+                FileSize = file.FileSize,
+                FileStatus = file.FileStatus,
+                UserId = file.UserId
+            });
+        }
+        return result;
     }
 
     /// <summary>
-    /// 
+    /// Upload the file for a user
     /// </summary>
-    /// <param name="formData"></param>
+    /// <param name="userId"></param>
     /// <param name="formFile"></param>
     /// <returns></returns>
+    [AbpAuthorize]
+    [UnitOfWork]
     public async Task<BasicUaserFileDto> UploadFileAsync(int userId, IFormFile formFile)
     {
         var a = userId;
         var b = formFile;
-        
+
         // if (!formData.TryGetValue("UserId", out var userId))
         // {
         //     return null;
         // }
-        
+
         var newUserFile = await Repository.InsertAsync(new UserFile()
         {
             FileName = formFile.FileName,

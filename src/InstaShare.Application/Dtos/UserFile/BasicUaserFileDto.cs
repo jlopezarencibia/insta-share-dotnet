@@ -1,8 +1,8 @@
 using Abp.Application.Services.Dto;
+using AutoMapper;
 using InstaShare.Shared;
 
 namespace InstaShare.Dtos.UserFile;
-
 public class BasicUaserFileDto: EntityDto<int>
 {
     public long FileSize { get; set; }

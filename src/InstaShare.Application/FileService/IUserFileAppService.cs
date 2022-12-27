@@ -13,5 +13,4 @@ public interface IUserFileAppService: IAsyncCrudAppService<UserFileDto>
     public Task<List<BasicUaserFileDto>> GetAllFilesByUserIdAsync(int userId);
     public Task<BasicUaserFileDto> UploadFileAsync(int userId, IFormFile formFile);
 
-
 }
