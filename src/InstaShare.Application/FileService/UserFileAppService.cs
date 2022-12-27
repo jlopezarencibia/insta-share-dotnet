@@ -32,10 +32,10 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
-    public async Task<List<UserFileDto>> GetAllFilesByUserIdAsync(int userId)
+    public async Task<List<BasicUaserFileDto>> GetAllFilesByUserIdAsync(int userId)
     {
         var userFiles = await Repository.GetAllListAsync(f => f.UserId == userId);
-        return ObjectMapper.Map<List<UserFileDto>>(userFiles);
+        return ObjectMapper.Map<List<BasicUaserFileDto>>(userFiles);
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
     /// <param name="formData"></param>
     /// <param name="formFile"></param>
     /// <returns></returns>
-    public async Task<UserFileDto> UploadFileAsync(int userId, IFormFile formFile)
+    public async Task<BasicUaserFileDto> UploadFileAsync(int userId, IFormFile formFile)
     {
         var a = userId;
         var b = formFile;
@@ -63,7 +63,7 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
             UserId = userId
         });
 
-        return ObjectMapper.Map<UserFileDto>(newUserFile);
+        return ObjectMapper.Map<BasicUaserFileDto>(newUserFile);
     }
 
     private byte[] ReadToEnd(Stream stream)
