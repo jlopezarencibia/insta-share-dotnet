@@ -65,14 +65,6 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
     [UnitOfWork]
     public async Task<BasicUaserFileDto> UploadFileAsync(int userId, IFormFile formFile)
     {
-        var a = userId;
-        var b = formFile;
-
-        // if (!formData.TryGetValue("UserId", out var userId))
-        // {
-        //     return null;
-        // }
-
         var newUserFile = await Repository.InsertAsync(new UserFile()
         {
             FileName = formFile.FileName,
@@ -116,7 +108,7 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
     private byte[] ReadToEnd(Stream stream)
     {
         long originalPosition = 0;
-
+        
         if (stream.CanSeek)
         {
             originalPosition = stream.Position;
@@ -126,17 +118,17 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
         try
         {
             byte[] readBuffer = new byte[4096];
-
             int totalBytesRead = 0;
             int bytesRead;
 
             while ((bytesRead = stream.Read(readBuffer, totalBytesRead, readBuffer.Length - totalBytesRead)) > 0)
             {
                 totalBytesRead += bytesRead;
-
+                
                 if (totalBytesRead == readBuffer.Length)
                 {
                     int nextByte = stream.ReadByte();
+                    
                     if (nextByte != -1)
                     {
                         byte[] temp = new byte[readBuffer.Length * 2];
@@ -149,6 +141,7 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
             }
 
             byte[] buffer = readBuffer;
+            
             if (readBuffer.Length != totalBytesRead)
             {
                 buffer = new byte[totalBytesRead];
