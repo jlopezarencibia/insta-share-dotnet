@@ -61,7 +61,7 @@ namespace InstaShare.Web.Host.Startup
             AuthConfigurer.Configure(services, _appConfiguration);
 
             services.AddSignalR();
-
+            
             // Configure CORS for angular2 UI
             services.AddCors(
                 options => options.AddPolicy(
@@ -117,6 +117,7 @@ namespace InstaShare.Web.Host.Startup
                 endpoints.MapControllerRoute("defaultWithArea", "{area}/{controller=Home}/{action=Index}/{id?}");
             });
 
+            
             // Enable middleware to serve generated Swagger as a JSON endpoint
             app.UseSwagger(c => { c.RouteTemplate = "swagger/{documentName}/swagger.json"; });
 

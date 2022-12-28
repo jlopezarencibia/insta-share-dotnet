@@ -5,14 +5,17 @@ using System.Net;
 using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.Authorization;
+using Abp.BackgroundJobs;
 using Abp.Domain.Repositories;
 using Abp.Domain.Uow;
 using Abp.Extensions;
 using InstaShare.Authorization;
 using InstaShare.Dtos.UserFile;
+using InstaShare.FileService.Jobs;
 using InstaShare.Models;
 using InstaShare.Shared;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace InstaShare.FileService;
 
@@ -21,12 +24,16 @@ namespace InstaShare.FileService;
 /// </summary>
 public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IUserFileAppService
 {
+    private readonly IBackgroundJobManager _backgroundJobManager;
     /// <summary>
     /// Default repository constructor
     /// </summary>
     /// <param name="repository"></param>
-    public UserFileAppService(IRepository<UserFile, int> repository) : base(repository)
+    public UserFileAppService(
+        IRepository<UserFile> repository,
+        IBackgroundJobManager backgroundJobManager) : base(repository)
     {
+        _backgroundJobManager = backgroundJobManager;
     }
 
     /// <summary>
@@ -36,13 +43,13 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
     /// <returns></returns>
     [AbpAuthorize]
     [UnitOfWork]
-    public async Task<List<BasicUaserFileDto>> GetAllFilesByUserIdAsync(int userId)
+    public async Task<List<BasicUserFileDto>> GetAllFilesByUserIdAsync(int userId)
     {
         var userFiles = await Repository.GetAllListAsync(f => f.UserId == userId);
-        var result = new List<BasicUaserFileDto>();
+        var result = new List<BasicUserFileDto>();
         foreach (var file in userFiles)
         {
-            result.Add(new BasicUaserFileDto()
+            result.Add(new BasicUserFileDto()
             {
                 Id = file.Id,
                 FileName = file.FileName,
@@ -63,7 +70,10 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
     /// <returns></returns>
     [AbpAuthorize]
     [UnitOfWork]
-    public async Task<BasicUaserFileDto> UploadFileAsync(int userId, IFormFile formFile)
+    [DisableRequestSizeLimit,
+     RequestFormLimits(MultipartBodyLengthLimit = int.MaxValue, 
+         ValueLengthLimit = int.MaxValue)]
+    public async Task<BasicUserFileDto> UploadFileAsync(int userId, IFormFile formFile)
     {
         var newUserFile = await Repository.InsertAsync(new UserFile()
         {
@@ -73,8 +83,11 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
             FileStatus = FileStatus.Pending,
             UserId = userId
         });
+        await CurrentUnitOfWork.SaveChangesAsync();
+        
+        await _backgroundJobManager.EnqueueAsync<ProcessFile, UserFile>(newUserFile);
 
-        var result = new BasicUaserFileDto()
+        var result = new BasicUserFileDto()
         {
             Id = newUserFile.Id,
             FileName = newUserFile.FileName,
@@ -91,12 +104,13 @@ public class UserFileAppService : AsyncCrudAppService<UserFile, UserFileDto>, IU
         return null;
     }
 
-    public async Task<BasicUaserFileDto> RenameAsync(int fileId, string newName)
+    public async Task<BasicUserFileDto> RenameAsync(int fileId, string newName)
     {
         var file = await Repository.GetAsync(fileId);
         file.FileName = newName;
         var newFile = await UpdateAsync(ObjectMapper.Map<UserFileDto>(file));
-        return new BasicUaserFileDto()
+        await CurrentUnitOfWork.SaveChangesAsync();
+        return new BasicUserFileDto()
         {
             Id = newFile.Id,
             FileName = newFile.FileName,

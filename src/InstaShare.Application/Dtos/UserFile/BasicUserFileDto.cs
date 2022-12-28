@@ -3,7 +3,7 @@ using AutoMapper;
 using InstaShare.Shared;
 
 namespace InstaShare.Dtos.UserFile;
-public class BasicUaserFileDto
+public class BasicUserFileDto
 {
     public int Id { get; set; }
     public long FileSize { get; set; }

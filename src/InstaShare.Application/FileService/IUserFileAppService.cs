@@ -10,9 +10,9 @@ namespace InstaShare.FileService;
 
 public interface IUserFileAppService: IAsyncCrudAppService<UserFileDto>
 {
-    public Task<List<BasicUaserFileDto>> GetAllFilesByUserIdAsync(int userId);
-    public Task<BasicUaserFileDto> UploadFileAsync(int userId, IFormFile formFile);
+    public Task<List<BasicUserFileDto>> GetAllFilesByUserIdAsync(int userId);
+    public Task<BasicUserFileDto> UploadFileAsync(int userId, IFormFile formFile);
     public Task DownloadFileAsync(int fileId);
-    public Task<BasicUaserFileDto> RenameAsync(int fileId, string newName);
+    public Task<BasicUserFileDto> RenameAsync(int fileId, string newName);
 
 }
